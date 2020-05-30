@@ -1,3 +1,4 @@
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -47,6 +48,20 @@ class AdventOfCode2016 {
         @Test
         fun `day 4, part 2`() {
             assertEquals(0, Day4.part2())
+        }
+    }
+
+    class Day5Puzzles {
+        @Test
+        @Ignore
+        fun `day 5, part 1`() {
+            assertEquals("2414bc77", Day5.part1())
+        }
+
+        @Test
+        @Ignore
+        fun `day 5, part 2`() {
+            assertEquals("437e60fc", Day5.part2())
         }
     }
 }
