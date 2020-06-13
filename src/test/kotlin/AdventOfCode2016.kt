@@ -88,4 +88,26 @@ class AdventOfCode2016 {
             assertEquals(258, Day7.part2())
         }
     }
+
+    class Day8Puzzles {
+        companion object {
+            private const val expected =
+                    " ##  #### ###  #  # ###  #### ###    ## ###   ### \n" +
+                    "#  # #    #  # #  # #  #    # #  #    # #  # #    \n" +
+                    "#  # ###  ###  #  # #  #   #  ###     # #  # #    \n" +
+                    "#### #    #  # #  # ###   #   #  #    # ###   ##  \n" +
+                    "#  # #    #  # #  # #    #    #  # #  # #       # \n" +
+                    "#  # #    ###   ##  #    #### ###   ##  #    ###  "
+        }
+
+        @Test
+        fun `day 8, part 1`() {
+            assertEquals(123, Day8.part1())
+        }
+
+        @Test
+        fun `day 8, part 2`() {
+            assertEquals(expected, Day8.part2())
+        }
+    }
 }
