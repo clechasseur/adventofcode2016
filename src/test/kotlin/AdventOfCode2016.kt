@@ -122,4 +122,16 @@ class AdventOfCode2016 {
             assertEquals(11_451_628_995L, Day9.part2())
         }
     }
+
+    class Day10Puzzles {
+        @Test
+        fun `day 10, part 1`() {
+            assertEquals(147, Day10.part1())
+        }
+
+        @Test
+        fun `day 10, part 2`() {
+            assertEquals(55_637, Day10.part2())
+        }
+    }
 }
