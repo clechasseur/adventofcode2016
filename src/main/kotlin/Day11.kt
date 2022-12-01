@@ -1,34 +1,47 @@
 object Day11 {
-    private val input = IsolatedArea(
-        Floor(
-            true,
+    private val input = IsolatedArea(listOf(
+        Floor(setOf(
             InterestingObject("thulium", ObjectType.GENERATOR),
             InterestingObject("thulium", ObjectType.MICROCHIP),
             InterestingObject("plutonium", ObjectType.GENERATOR),
             InterestingObject("strontium", ObjectType.GENERATOR)
-        ),
-        Floor(
-            false,
+        )),
+        Floor(setOf(
             InterestingObject("plutonium", ObjectType.MICROCHIP),
             InterestingObject("strontium", ObjectType.MICROCHIP)
-        ),
-        Floor(
-            false,
+        )),
+        Floor(setOf(
             InterestingObject("promethium", ObjectType.GENERATOR),
             InterestingObject("promethium", ObjectType.MICROCHIP),
             InterestingObject("ruthenium", ObjectType.GENERATOR),
             InterestingObject("ruthenium", ObjectType.MICROCHIP)
-        ),
-        Floor(false)
+        )),
+        Floor(emptySet())
+    ), elevatorFloorIdx = 0)
+
+    fun part1(): Int = countSteps(input)
+
+    fun part2(): Int = countSteps(
+        IsolatedArea(listOf(
+            Floor(input.floors[0].objects + setOf(
+                InterestingObject("elerium", ObjectType.GENERATOR),
+                InterestingObject("elerium", ObjectType.MICROCHIP),
+                InterestingObject("dilithium", ObjectType.GENERATOR),
+                InterestingObject("dilithium", ObjectType.MICROCHIP)
+            )),
+            input.floors[1],
+            input.floors[2],
+            input.floors[3]
+        ), elevatorFloorIdx = input.elevatorFloorIdx)
     )
 
-    fun part1(): Int {
+    private fun countSteps(initialState: IsolatedArea): Int {
         var steps = 0
-        var states = listOf(input)
-        var seenStates = emptyList<IsolatedArea>()
+        var states = setOf(initialState)
+        var seenStates = emptySet<Int>()
         while (states.none { it.finished }) {
-            states = states.asSequence().flatMap { nextSteps(it) }.filterNot { it in seenStates }.distinct().toList()
-            seenStates = (seenStates + states).asSequence().distinct().toList()
+            states = states.asSequence().flatMap { nextSteps(it) }.filterNot { it.hashCode() in seenStates }.toSet()
+            seenStates = seenStates + states.map { it.hashCode() }
             require(states.isNotEmpty()) { "No way to get to the final state" }
             steps++
         }
@@ -36,29 +49,27 @@ object Day11 {
     }
 
     private fun nextSteps(state: IsolatedArea): Sequence<IsolatedArea> = sequence {
-        val curFloorIdx = state.floors.indexOfFirst { it.elevator }
+        val curFloorIdx = state.elevatorFloorIdx
         when (curFloorIdx) {
             state.floors.indices.first -> listOf(state.floors.indices.first + 1)
             state.floors.indices.last -> listOf(state.floors.indices.last - 1)
             else -> listOf(curFloorIdx - 1, curFloorIdx + 1)
         }.forEach { destFloorIdx ->
             state.floors[curFloorIdx].objects.forEach { obj ->
-                val newState = state.clone()
-                newState.floors[curFloorIdx].objects.remove(obj)
-                newState.floors[curFloorIdx].elevator = false
-                newState.floors[destFloorIdx].objects.add(obj)
-                newState.floors[destFloorIdx].elevator = true
+                val newFloors = state.floors.toMutableList()
+                newFloors[curFloorIdx] = Floor(newFloors[curFloorIdx].objects - obj)
+                newFloors[destFloorIdx] = Floor(newFloors[destFloorIdx].objects + obj)
+                val newState = IsolatedArea(newFloors, destFloorIdx)
                 if (newState.valid) {
                     yield(newState)
                 }
             }
-            state.floors[curFloorIdx].objects.forEach { obj1 ->
-                state.floors[curFloorIdx].objects.filterNot { it == obj1 }.forEach { obj2 ->
-                    val newState = state.clone()
-                    newState.floors[curFloorIdx].objects.removeAll(listOf(obj1, obj2))
-                    newState.floors[curFloorIdx].elevator = false
-                    newState.floors[destFloorIdx].objects.addAll(listOf(obj1, obj2))
-                    newState.floors[destFloorIdx].elevator = true
+            state.floors[curFloorIdx].objects.forEachIndexed { idx1, obj1 ->
+                state.floors[curFloorIdx].objects.drop(idx1 + 1).forEach { obj2 ->
+                    val newFloors = state.floors.toMutableList()
+                    newFloors[curFloorIdx] = Floor(newFloors[curFloorIdx].objects - setOf(obj1, obj2))
+                    newFloors[destFloorIdx] = Floor(newFloors[destFloorIdx].objects + setOf(obj1, obj2))
+                    val newState = IsolatedArea(newFloors, destFloorIdx)
                     if (newState.valid) {
                         yield(newState)
                     }
@@ -67,19 +78,16 @@ object Day11 {
         }
     }
 
-    private enum class ObjectType {
-        GENERATOR, MICROCHIP,
+    private enum class ObjectType(val id: String) {
+        GENERATOR("G"),
+        MICROCHIP("M"),
     }
 
-    private data class InterestingObject(val element: String, val type: ObjectType)
+    private data class InterestingObject(val element: String, val type: ObjectType) {
+        override fun toString(): String = "${element[0].toUpperCase()}${element[1]}${type.id}"
+    }
 
-    private class Floor(var elevator: Boolean, vararg initialObjects: InterestingObject) {
-        val objects = initialObjects.toMutableList()
-
-        init {
-            require(valid) { "Invalid floor configuration" }
-        }
-
+    private data class Floor(val objects: Set<InterestingObject>) {
         val valid: Boolean
             get() = !(objects.any { it.type == ObjectType.GENERATOR } && objects.any { microchip ->
                 microchip.type == ObjectType.MICROCHIP && objects.none { generator ->
@@ -87,33 +95,23 @@ object Day11 {
                 }
             })
 
-        override fun equals(other: Any?) = other is Floor && other.objects == objects
-        override fun hashCode() = objects.hashCode()
-
-        fun clone() = Floor(elevator, *objects.toTypedArray())
+        override fun toString(): String = "[${objects.joinToString(",")}]"
     }
 
-    private class IsolatedArea(vararg initialFloors: Floor) {
-        val floors = initialFloors.toMutableList().apply {
-            while (size < 4) {
-                add(Floor(elevator = false))
-            }
-            require(size == 4) { "Invalid floor configuration" }
-        }
-
+    private data class IsolatedArea(val floors: List<Floor>, val elevatorFloorIdx: Int) {
         init {
-            require(valid) { "Invalid isolated area layout" }
+            require(floors.size == 4) { "Isolated area needs to have 4 floors" }
+            require(elevatorFloorIdx in floors.indices) { "Elevator needs to be on a valid floor" }
         }
 
         val valid: Boolean
-            get() = floors.all { it.valid } && floors.count { it.elevator } == 1
+            get() = floors.all { it.valid }
 
         val finished: Boolean
-            get() = floors.dropLast(1).all { it.objects.isEmpty() && !it.elevator }
+            get() = floors.dropLast(1).all { it.objects.isEmpty() } && elevatorFloorIdx == floors.indices.last
 
-        override fun equals(other: Any?) = other is IsolatedArea && other.floors == floors
-        override fun hashCode() = floors.hashCode()
-
-        fun clone() = IsolatedArea(*floors.map { it.clone() }.toTypedArray())
+        override fun toString(): String = "{[" + floors.mapIndexed { i, f ->
+            "$i${if (i == elevatorFloorIdx) "*" else ""}: $f"
+        }.joinToString(",") + "]}"
     }
 }
