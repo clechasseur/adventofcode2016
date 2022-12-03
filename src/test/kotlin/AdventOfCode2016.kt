@@ -231,4 +231,12 @@ class AdventOfCode2016 {
             assertEquals(19995121, Day18.part2())
         }
     }
+
+    class Day19Puzzles {
+        @Test
+        @Ignore("Too slow")
+        fun `day 19, part 1`() {
+            assertEquals(0, Day19.part1())
+        }
+    }
 }
