@@ -255,4 +255,17 @@ class AdventOfCode2016 {
             assertEquals(125L, Day20.part2())
         }
     }
+
+    class Day21Puzzles {
+        @Test
+        fun `day 21, part 1`() {
+            assertEquals("fdhbcgea", Day21.part1())
+        }
+
+        @Test
+        @Ignore("In progress")
+        fun `day 21, part 2`() {
+            assertEquals("", Day21.part2())
+        }
+    }
 }
