@@ -246,15 +246,13 @@ class AdventOfCode2016 {
 
     class Day20Puzzles {
         @Test
-        @Ignore("Took about 40 seconds on my machine")
         fun `day 20, part 1`() {
             assertEquals(23923783L, Day20.part1())
         }
 
         @Test
-        @Ignore("Blows up memory")
         fun `day 20, part 2`() {
-            assertEquals(0L, Day20.part2())
+            assertEquals(125L, Day20.part2())
         }
     }
 }
