@@ -7,13 +7,11 @@ object Day19 {
         it.elves.size > 1
     }.first().elves.single()
 
-    fun part2(): Int {
-        val circle = Circle((1..input).toList())
-        while (circle.size > 1) {
-            circle.removeOne()
-        }
-        return circle.head!!.value
-    }
+    fun part2(): Int = generateSequence(State2((1..input).toList())) {
+        it.next()
+    }.dropWhile {
+        it.elves.size > 1
+    }.first().elves.single()
 
     private data class State(val elves: List<Int>) {
         fun next(): State {
@@ -26,51 +24,16 @@ object Day19 {
         }
     }
 
-    private class Node<T>(val value: T) {
-        var next: Node<T>? = null
-        var prev: Node<T>? = null
-
-        fun skip(n: Int): Node<T> {
-            require(next != null) { "Cannot skip uninitialized nodes" }
-            var node = this
-            var i = n
-            while (i-- > 0) {
-                node = node.next!!
-            }
-            return node
-        }
-    }
-
-    private class Circle<T>(values: Collection<T>) {
-        var head: Node<T>? = null
-            private set
-
-        var size: Int
-            private set
-
-        init {
-            var prev: Node<T>? = null
-            for (value in values) {
-                val node = Node(value)
-                if (head == null) {
-                    head = node
-                }
-                node.prev = prev
-                prev?.next = node
-                prev = node
-            }
-            prev?.next = head
-            head?.prev = prev
-            size = values.size
-        }
-
-        fun removeOne() {
-            require(size > 1) { "Circle is complete" }
-            val node = head!!.skip(size / 2)
-            node.prev!!.next = node.next
-            node.next!!.prev = node.prev
-            size--
-            head = head!!.next
+    private data class State2(val elves: List<Int>) {
+        fun next(): State2 {
+            val firstHalf = elves.subList(0, elves.size / 2)
+            val secondHalf = elves.subList(elves.size / 2, elves.size)
+            val indexesToSkip = generateSequence(0 to if (elves.size % 2 == 0) 1 else 2) { (i, s) ->
+                i + s to if (s == 1) 2 else 1
+            }.takeWhile { it.first in secondHalf.indices }.map { it.first }.toSet()
+            val filteredSecondHalf = secondHalf.filterIndexed { i, _ -> !indexesToSkip.contains(i) }
+            val newElves = firstHalf.drop(indexesToSkip.size) + filteredSecondHalf + firstHalf.take(indexesToSkip.size)
+            return State2(newElves)
         }
     }
 }
