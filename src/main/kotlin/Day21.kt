@@ -123,24 +123,10 @@ object Day21 {
     }
 
     fun part2(): String {
-        val operations = input.lines().map { it.toOperation() }
-        var password = "abcdefgh"
-        val forward = mutableListOf(password)
-        for (operation in operations) {
-            password = operation(password)
-            forward.add(password)
-        }
-        val backward = forward.reversed()
-
         val reverseOperations = input.lines().reversed().map { it.toOperation().reversed() }
-        var i = 0
+        var password = "fbgdceah"
         for (operation in reverseOperations) {
-            val oldPassword = password
             password = operation(password)
-            i++
-            if (password != backward[i]) {
-                error("Operation [$operation] did not properly reverse $oldPassword: expected ${backward[i]}, got $password")
-            }
         }
         return password
     }
@@ -202,7 +188,14 @@ object Day21 {
 
     private class ShiftReversedBasedOn(val x: Char) : Operation {
         override fun invoke(input: String): String {
-            return ShiftBasedOn(x)(input.reversed()).reversed()
+            for (i in 1..(input.length * 2)) {
+                val candidate = Shift(i)(input)
+                val candidatePos = candidate.indexOf(x)
+                if (1 + candidatePos + (if (candidatePos >= 4) 1 else 0) == i) {
+                    return candidate
+                }
+            }
+            error("Could not reverse-rotate $input based on position of letter $x")
         }
 
         override fun reversed(): Operation {

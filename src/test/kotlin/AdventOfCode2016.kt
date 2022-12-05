@@ -263,9 +263,8 @@ class AdventOfCode2016 {
         }
 
         @Test
-        @Ignore("In progress")
         fun `day 21, part 2`() {
-            assertEquals("", Day21.part2())
+            assertEquals("egfbcadh", Day21.part2())
         }
     }
 }
