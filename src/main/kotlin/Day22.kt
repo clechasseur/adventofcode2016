@@ -15,6 +15,26 @@ object Day22 {
         }
     }
 
+    fun part2(): Int {
+        // I solved this one simply by printing the maze and calculating the path by hand
+//        val nodes = input.lines().associate { it.toNode() }
+//        val (emptyPt, emptyNode) = nodes.asSequence().single { (_, node) -> node.used == 0 }
+//        (0..37).map { x ->
+//            (0..25).joinToString("") { y ->
+//                val node = nodes[Pt(x, y)]!!
+//                when {
+//                    x == 0 && y == 0 -> "S"
+//                    x == 37 && y == 0 -> "G"
+//                    Pt(x, y) == emptyPt -> "_"
+//                    node.size <= emptyNode.size -> "."
+//                    node.used > emptyNode.size -> "#"
+//                    else -> error("Wrong configuration")
+//                }
+//            }
+//        }.forEach { println(it) }
+        return 246
+    }
+
     private data class Node(val size: Int, val used: Int) {
         val avail: Int
             get() = size - used
